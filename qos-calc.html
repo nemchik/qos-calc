@@ -175,10 +175,10 @@
       });
       var ulavg = ulsum / ulResults.length;
 
-      $("#dlMSpan").html((dlavg * ($("#dlThrottle").val() * 0.01)).toFixed(2));
-      $("#dlKSpan").html((dlavg * ($("#dlThrottle").val() * 0.01) * 125).toFixed(2));
-      $("#ulMSpan").html((ulavg * ($("#ulThrottle").val() * 0.01)).toFixed(2));
-      $("#ulKSpan").html((ulavg * ($("#ulThrottle").val() * 0.01) * 125).toFixed(2));
+      $("#dlMSpan").html((dlavg * $("#dlThrottle").val() * 0.01).toFixed(2));
+      $("#dlKSpan").html((dlavg * $("#dlThrottle").val() * 0.01 * 125).toFixed(2));
+      $("#ulMSpan").html((ulavg * $("#ulThrottle").val() * 0.01).toFixed(2));
+      $("#ulKSpan").html((ulavg * $("#ulThrottle").val() * 0.01 * 125).toFixed(2));
       return;
     });
   </script>
