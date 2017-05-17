@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>QOS Calculator</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.8.3/jquery.csv.min.js"></script>
+</head>
+
+<body>
+  <div class="container">
+    <form method="post" class="form-horizontal" name="form">
+      <h2>QOS Calculator</h2>
+      <div class="form-group">
+        <label class="control-label col-sm-2" for="results">Input Results:</label>
+        <div class="col-sm-10">
+          <textarea class="form-control" id="results" rows="11"></textarea>
+        </div>
+      </div>
+
+      <input type="button" class="btn btn-success" value="Calculate" /><br />
+      <br />
+
+      <div class="well">
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th class="col-sm-2">Speed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Download Speed (Mbps)</td>
+              <td><span id="dlMSpan"></span></td>
+            </tr>
+            <tr>
+              <td>Download Speed (kB/s)</td>
+              <td><span id="dlKSpan"></span></td>
+            </tr>
+            <tr>
+              <td>Upload Speed (Mbps)</td>
+              <td><span id="ulMSpan"></span></td>
+            </tr>
+            <tr>
+              <td>Upload Speed (kB/s)</td>
+              <td><span id="ulKSpan"></span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </form>
+  </div>
+  <script>
+    $("input[value=Calculate]").click(function(ev) {
+      if ($("#results").val() === "") {
+        alert("Please enter your results.");
+        return;
+      }
+      var input = $('#results').val() + "\r\n";
+      var data = $.csv.toObjects(input);
+      data = $.grep(data, function(e) {
+        return e.ConnType == "Wifi";
+      });
+      if (data.length < 5) {
+        alert("Please run at least 5 tests on Wifi.");
+        return;
+      }
+      var unique = {};
+      var distinct = [];
+      var dlResults = [];
+      var ulResults = [];
+      for (var i in data) {
+        if (typeof(unique[data[i].ServerName]) == "undefined") {
+          distinct.push(data[i].ServerName);
+        }
+        unique[data[i].ServerName] = 0;
+        dlResults.push(data[i].Download);
+        ulResults.push(data[i].Upload);
+      }
+      if (distinct.length < 3) {
+        alert("Please test using at least 3 different servers.");
+        return;
+      }
+      dlResults = dlResults.map(Number).sort(function(a, b) {
+        return a - b
+      }).slice(1, dlResults.length - 1);
+      ulResults = ulResults.map(Number).sort(function(a, b) {
+        return a - b
+      }).slice(1, ulResults.length - 1);
+
+      var dlsum = dlResults.reduce(function(a, b) {
+        return a + b;
+      });
+      var dlavg = dlsum / dlResults.length;
+
+      var ulsum = ulResults.reduce(function(a, b) {
+        return a + b;
+      });
+      var ulavg = ulsum / ulResults.length;
+
+      $('#dlMSpan').html((dlavg * 0.85).toFixed(2));
+      $('#dlKSpan').html((dlavg * 0.85 * 125).toFixed(2));
+      $('#ulMSpan').html((ulavg * 0.70).toFixed(2));
+      $('#ulKSpan').html((ulavg * 0.70 * 125).toFixed(2));
+      return;
+    });
+  </script>
+</body>
+
+</html>
