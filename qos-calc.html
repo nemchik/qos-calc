@@ -8,6 +8,10 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <!-- https://developers.google.com/speed/libraries/#jquery-ui -->
+  <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+  <!-- https://github.com/evanplaice/jquery-csv -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-csv/0.8.3/jquery.csv.min.js"></script>
 </head>
 
@@ -15,14 +19,36 @@
   <div class="container">
     <form method="post" class="form-horizontal" name="form">
       <h2>QOS Calculator</h2>
-      <div class="form-group">
+      <div class="row form-group">
         <label class="control-label col-sm-2" for="results">Input Results:</label>
         <div class="col-sm-10">
           <textarea class="form-control" id="results" rows="11"></textarea>
         </div>
       </div>
 
-      <input type="button" class="btn btn-success" value="Calculate" /><br />
+      <div class="row">
+        <div class="col-sm-2"><input type="button" class="btn btn-success" value="Calculate" /></div>
+        <div class="project col-sm-5">
+          <div class="form-group">
+            <label class="control-label col-sm-6">Throttle Download: <span class="percent">85%</span></label>
+            <div class="col-sm-6">
+              <h4><div class="bar"></div></h4>
+              <input type="hidden" class="percentNum" id="dlThrottle" value="85" />
+            </div>
+          </div>
+        </div>
+
+        <div class="project col-sm-5">
+          <div class="form-group">
+            <label class="control-label col-sm-6">Throttle Upload: <span class="percent">70%</span></label>
+            <div class="col-sm-6">
+              <h4><div class="bar"></div></h4>
+              <input type="hidden" class="percentNum" id="ulThrottle" value="70" />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <br />
 
       <div class="well">
@@ -56,6 +82,52 @@
     </form>
   </div>
   <script>
+    $(function() {
+      $('.project').each(function() {
+        var $projectBar = $(this).find('.bar');
+        var $projectPercent = $(this).find('.percent');
+        var $projectPercentNum = $(this).find('.percentNum');
+        var $projectRange = $(this).find('.ui-slider-range');
+        $projectBar.slider({
+          range: "min",
+          animate: true,
+          value: $projectPercentNum.val(),
+          min: 0,
+          max: 100,
+          step: 1,
+          slide: function(event, ui) {
+            $projectPercent.html(ui.value + "%");
+            $projectPercentNum.val(ui.value);
+          },
+          change: function(event, ui) {
+            var $projectRange = $(this).find('.ui-slider-range');
+            var percent = ui.value;
+            if (percent > 86) {
+              $projectPercent.css({
+                'color': 'red'
+              });
+              $projectRange.css({
+                'background': 'red'
+              });
+            } else if (percent >= 75 && percent <= 85) {
+              $projectPercent.css({
+                'color': 'green'
+              });
+              $projectRange.css({
+                'background': 'green'
+              });
+            } else if (percent < 74) {
+              $projectPercent.css({
+                'color': 'gold'
+              });
+              $projectRange.css({
+                'background': 'gold'
+              });
+            }
+          }
+        });
+      })
+    })
     $("input[value=Calculate]").click(function(ev) {
       if ($("#results").val() === "") {
         alert("Please enter your results.");
@@ -103,10 +175,10 @@
       });
       var ulavg = ulsum / ulResults.length;
 
-      $('#dlMSpan').html((dlavg * 0.85).toFixed(2));
-      $('#dlKSpan').html((dlavg * 0.85 * 125).toFixed(2));
-      $('#ulMSpan').html((ulavg * 0.70).toFixed(2));
-      $('#ulKSpan').html((ulavg * 0.70 * 125).toFixed(2));
+      $("#dlMSpan").html((dlavg * ($("#dlThrottle").val() * 0.01)).toFixed(2));
+      $("#dlKSpan").html((dlavg * ($("#dlThrottle").val() * 0.01) * 125).toFixed(2));
+      $("#ulMSpan").html((ulavg * ($("#ulThrottle").val() * 0.01)).toFixed(2));
+      $("#ulKSpan").html((ulavg * ($("#ulThrottle").val() * 0.01) * 125).toFixed(2));
       return;
     });
   </script>
