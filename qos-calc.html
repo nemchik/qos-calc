@@ -135,9 +135,11 @@
       }
       var input = $('#results').val() + "\r\n";
       var data = $.csv.toObjects(input);
-      data = $.grep(data, function(e) {
-        return e.ConnType == "Wifi";
-      });
+      if (data[0].hasOwnProperty("ConnType")) {
+        data = $.grep(data, function(e) {
+          return e.ConnType == "Wifi";
+        });
+      }
       if (data.length < 5) {
         alert("Please run at least 5 tests on Wifi.");
         return;
@@ -147,12 +149,21 @@
       var dlResults = [];
       var ulResults = [];
       for (var i in data) {
-        if (typeof(unique[data[i].ServerName]) == "undefined") {
-          distinct.push(data[i].ServerName);
+        if (data[i].hasOwnProperty("DOWNLOAD_MEGABITS") && data[i].hasOwnProperty("UPLOAD_MEGABITS") && data[i].hasOwnProperty("SERVER_NAME")) {
+            data[i].dl = data[i].DOWNLOAD_MEGABITS;
+            data[i].ul = data[i].UPLOAD_MEGABITS;
+            data[i].sn = data[i].SERVER_NAME;
+        } else if (data[i].hasOwnProperty("Download") && data[i].hasOwnProperty("Upload") && data[i].hasOwnProperty("ServerName")) {
+            data[i].dl = data[i].Download;
+            data[i].ul = data[i].Upload;
+            data[i].sn = data[i].ServerName;
         }
-        unique[data[i].ServerName] = 0;
-        dlResults.push(data[i].Download);
-        ulResults.push(data[i].Upload);
+        if (typeof(unique[data[i].sn]) == "undefined") {
+          distinct.push(data[i].sn);
+        }
+        unique[data[i].sn] = 0;
+        dlResults.push(data[i].dl);
+        ulResults.push(data[i].ul);
       }
       if (distinct.length < 3) {
         alert("Please test using at least 3 different servers.");
